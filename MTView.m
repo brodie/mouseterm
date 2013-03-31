@@ -15,7 +15,8 @@ static BOOL enabled = YES;
                             motion: (BOOL) motion
                            release: (BOOL) release
 {
-    Position pos = [self MouseTerm_currentPosition: event];
+    // get mouse position, the origin coodinate is (1, 1).
+    Position pos = [self MouseTerm_currentPosition: event]; 
     unsigned int x = pos.x;
     unsigned int y = pos.y;
     char cb = button;
@@ -37,7 +38,8 @@ static BOOL enabled = YES;
     case URXVT_PROTOCOL:
         if (release)
             cb |= MOUSE_RELEASE;
-        snprintf(buf, BUFFER_LENGTH, "\e[%d;%d;%dM", cb + 32, x, y);
+        cb += 32; // base offset +32 (to make it printable)
+        snprintf(buf, BUFFER_LENGTH, "\e[%d;%d;%dM", cb, x, y);
         len = strlen(buf);
         break;
    
@@ -51,13 +53,17 @@ static BOOL enabled = YES;
 
     case NORMAL_PROTOCOL:
     default:
+        // add base offset +32 (to make it printable)
+        cb += 32;
+        x += 32;
+        y += 32;
         if (release)
             cb |= MOUSE_RELEASE;
-        x = MIN(x + 33, 255);
-        y = MIN(y + 33, 255);
+        x = MIN(x, 255);
+        y = MIN(y, 255);
         len = MOUSE_RESPONSE_LEN;
 
-        snprintf(buf, len + 1, MOUSE_RESPONSE, cb + 32, x, y);
+        snprintf(buf, len + 1, MOUSE_RESPONSE, cb, x, y);
         break;
     }
     return [NSData dataWithBytes: buf length: len];
@@ -131,6 +137,15 @@ static BOOL enabled = YES;
     // The above method returns the position *including* scrollback,
     // so we have to compensate for that.
     pos.y -= scrollback;
+    pos.y += 1; // origin offset +1
+    // pos.x may not indicate correct coordinate value if the tail 
+    // cells of line buffer are empty, so we calculate it from the cell size. 
+    CGSize size = [(TTView*) self cellSize];
+    pos.x = (int)round(viewloc.x / size.width);
+
+    // treat negative position value as 1.
+    pos.x = MAX(1, pos.x);
+    pos.y = MAX(1, pos.y);
     return pos;
 }
 
