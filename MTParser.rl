@@ -27,6 +27,13 @@
         state.pendingMouseMode = (fc - 48);
     }
 
+    action handle_hard_reset
+    {
+        [mobj MouseTerm_setAppCursorMode: NO];
+        [mobj MouseTerm_setMouseProtocol: NORMAL_PROTOCOL];
+        [mobj MouseTerm_setMouseMode: NO_MODE];
+    }
+
     action handle_sda
     {
         state.handleSda = YES;
@@ -77,6 +84,7 @@
 
     esc = 0x1b;
     csi = esc . "[";
+    ris = esc . "c";
     flag = ("h" | "l") @handle_flag;
     osc = esc . ']';
     appkeys = "1";
@@ -91,6 +99,7 @@
     st  = 0x9c;
 
     main := ((any - csi | any - osc)* . (mode_toggle # @got_toggle
+                                         | ris @handle_hard_reset
                                          | cs_sda @handle_sda
                                          | debug @got_debug))*;
 }%%
