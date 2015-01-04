@@ -3,6 +3,7 @@
 #import "MouseTerm.h"
 #import "MTParserState.h"
 #import "MTShell.h"
+#import "Terminal.h"
 
 @implementation NSObject (MTShell)
 
@@ -32,6 +33,7 @@
     NSValue *ptr = [self MouseTerm_initVars];
     [[MouseTerm_ivars objectForKey: ptr]
         setObject: [NSNumber numberWithInt:mouseMode] forKey: @"mouseMode"];
+    [self MouseTerm_cachePosition: nil];
 }
 
 - (int) MouseTerm_getMouseMode
@@ -47,6 +49,7 @@
     [[MouseTerm_ivars objectForKey: ptr]
         setObject: [NSNumber numberWithInt:mouseProtocol]
            forKey: @"mouseProtocol"];
+    [self MouseTerm_cachePosition: nil];
 }
 
 - (int) MouseTerm_getMouseProtocol
@@ -106,6 +109,29 @@
         return;
 
     [self MouseTerm_writeData: data];
+}
+
+- (void) MouseTerm_cachePosition: (Position*) pos
+{
+    NSValue *ptr = [self MouseTerm_initVars];
+    if (pos) {
+        [[MouseTerm_ivars objectForKey: ptr]
+            setObject: [NSValue valueWithBytes: pos objCType: @encode(Position)]
+               forKey: @"positionCache"];
+    } else {
+        [[MouseTerm_ivars objectForKey: ptr] removeObjectForKey: @"positionCache"];
+    }
+}
+
+- (BOOL) MouseTerm_positionIsChanged: (Position*) pos;
+{
+    Position cache;
+    NSValue *ptr = [self MouseTerm_initVars];
+    NSValue *value = [[MouseTerm_ivars objectForKey: ptr] objectForKey: @"positionCache"];
+    if (!value)
+        return YES;
+    [value getValue: &cache];
+    return cache.x != pos->x || cache.y != pos->y;
 }
 
 // Deletes instance variables

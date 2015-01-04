@@ -3,10 +3,12 @@
 #import "Terminal.h"
 
 @interface NSView (MTView)
-- (NSData*) MouseTerm_codeForEvent: (NSEvent*) event
-                            button: (MouseButton) button
-                            motion: (BOOL) motion
-                           release: (BOOL) release;
+- (NSData*) MouseTerm_codeForX: (unsigned int) x
+                             Y: (unsigned int) y
+                      modifier: (char) modflag
+                        button: (MouseButton) button
+                        motion: (BOOL) motion
+                       release: (BOOL) release;
 + (void) MouseTerm_setEnabled: (BOOL) value;
 + (BOOL) MouseTerm_getEnabled;
 - (NSScroller*) MouseTerm_scroller;

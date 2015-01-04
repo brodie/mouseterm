@@ -10,16 +10,14 @@
 
 static BOOL enabled = YES;
 
-- (NSData*) MouseTerm_codeForEvent: (NSEvent*) event
-                            button: (MouseButton) button
-                            motion: (BOOL) motion
-                           release: (BOOL) release
+- (NSData*) MouseTerm_codeForX: (unsigned int) x
+                             Y: (unsigned int) y
+                      modifier: (char) modflag
+                        button: (MouseButton) button
+                        motion: (BOOL) motion
+                       release: (BOOL) release
 {
-    Position pos = [self MouseTerm_currentPosition: event];
-    unsigned int x = pos.x;
-    unsigned int y = pos.y;
     char cb = button;
-    char modflag = [event modifierFlags];
 
     if (modflag & NSShiftKeyMask) cb |= 4;
     if (modflag & NSAlternateKeyMask) cb |= 8;
@@ -150,10 +148,15 @@ static BOOL enabled = YES;
     case ALL_MODE:
     {
         [shell MouseTerm_setIsMouseDown: YES];
-        NSData* data = [self MouseTerm_codeForEvent: event
-                                             button: button
-                                             motion: NO
-                                            release: NO];
+        // get mouse position, the origin coodinate is (1, 1).
+        Position pos = [self MouseTerm_currentPosition: event];
+        [shell MouseTerm_cachePosition: &pos];
+        NSData* data = [self MouseTerm_codeForX: pos.x
+                                              Y: pos.y
+                                       modifier: [event modifierFlags]
+                                         button: button
+                                         motion: NO
+                                        release: NO];
         [(TTShell*) shell writeData: data];
 
         goto handled;
@@ -183,11 +186,18 @@ ignored:
     case BUTTON_MODE:
     case ALL_MODE:
     {
-        NSData* data = [self MouseTerm_codeForEvent: event
+        // get mouse position, the origin coodinate is (1, 1).
+        Position pos = [self MouseTerm_currentPosition: event];
+        if ([shell MouseTerm_positionIsChanged: &pos]) {
+            [shell MouseTerm_cachePosition: &pos];
+            NSData* data = [self MouseTerm_codeForX: pos.x
+                                                  Y: pos.y
+                                           modifier: [event modifierFlags]
                                              button: button
                                              motion: YES
                                             release: NO];
-        [(TTShell*) shell writeData: data];
+            [(TTShell*) shell writeData: data];
+        }
         goto handled;
     }
     }
@@ -214,10 +224,15 @@ ignored:
     case ALL_MODE:
     {
         [shell MouseTerm_setIsMouseDown: NO];
-        NSData* data = [self MouseTerm_codeForEvent: event
-                                             button: button
-                                             motion: NO
-                                            release: YES];
+        // get mouse position, the origin coodinate is (1, 1).
+        Position pos = [self MouseTerm_currentPosition: event];
+        [shell MouseTerm_cachePosition: &pos];
+        NSData* data = [self MouseTerm_codeForX: pos.x
+                                              Y: pos.y
+                                       modifier: [event modifierFlags]
+                                         button: button
+                                         motion: NO
+                                        release: YES];
         [(TTShell*) shell writeData: data];
 
         goto handled;
@@ -375,11 +390,14 @@ ignored:
         }
         else
             button = MOUSE_WHEEL_UP;
-
-        NSData* data = [self MouseTerm_codeForEvent: event
-                                             button: button
-                                             motion: NO
-                                            release: NO];
+        // get mouse position, the origin coodinate is (1, 1).
+        Position pos = [self MouseTerm_currentPosition: event];
+        NSData* data = [self MouseTerm_codeForX: pos.x
+                                              Y: pos.y
+                                       modifier: [event modifierFlags]
+                                         button: button
+                                         motion: NO
+                                        release: NO];
 
         long i;
         long lines = lround(delta) + 1;

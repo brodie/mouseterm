@@ -1,4 +1,5 @@
 #import <Cocoa/Cocoa.h>
+#import "Terminal.h"
 
 @class MTParserState;
 
@@ -22,4 +23,6 @@
 - (void) MouseTerm_setParserState: (MTParserState*) parserState;
 - (MTParserState*) MouseTerm_getParserState;
 
+- (void) MouseTerm_cachePosition: (Position*) pos;
+- (BOOL) MouseTerm_positionIsChanged: (Position*) pos;
 @end
