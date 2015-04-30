@@ -111,7 +111,7 @@ in MouseTerm. [Ragel][11] is used for parsing control codes.
 
 [7]: http://git-scm.org/
 [8]: http://github.com/brodie/mouseterm
-[9]: http://rentzsch.com/trac/wiki/JRSwizzle
+[9]: https://github.com/rentzsch/jrswizzle
 [10]: http://iterm.sourceforge.net/
 [11]: http://www.complang.org/ragel/
 
